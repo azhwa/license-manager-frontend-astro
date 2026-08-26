@@ -38,3 +38,5 @@ CORS_ORIGIN=https://app.example.com
 ```
 
 Dashboard memakai JWT 8 jam dari endpoint `/admin/login` dan menyimpannya hanya selama tab browser aktif melalui `sessionStorage`.
+
+# license-manager-frontend-astro
