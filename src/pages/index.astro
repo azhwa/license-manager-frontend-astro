@@ -1,3 +1,18 @@
 ---
-return Astro.redirect('/check');
+import BaseLayout from '../layouts/BaseLayout.astro';
 ---
+<BaseLayout title="License Manager" description="Secure license management.">
+  <section class="redirect-main container">
+    <div class="redirect-card">
+      <div class="redirect-icon"><iconify-icon icon="lucide:key-round" width="28"></iconify-icon></div>
+      <span class="eyebrow">License Manager</span>
+      <h1>Menyiapkan halaman Anda</h1>
+      <p class="lead">Anda akan diarahkan ke halaman pemeriksaan lisensi.</p>
+      <div class="redirect-loader" aria-label="Memuat halaman"><span></span><span></span><span></span></div>
+      <a class="button" href="/check">Lanjutkan sekarang <iconify-icon icon="lucide:arrow-right" width="17"></iconify-icon></a>
+    </div>
+  </section>
+  <script is:inline>
+    window.location.replace('/check');
+  </script>
+</BaseLayout>
