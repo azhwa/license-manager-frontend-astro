@@ -31,6 +31,28 @@ npm run build
 
 Hasil build ada di `dist/` dan dapat dilayani oleh Nginx, Cloudflare Pages, atau static hosting lain. Backend tetap berjalan melalui PM2 dan Cloudflare Tunnel.
 
+## PM2 di VPS
+
+Setelah build selesai, jalankan static server frontend melalui PM2:
+
+```bash
+npm ci
+npm run build
+pm2 start ecosystem.config.cjs
+pm2 save
+```
+
+Frontend listen di `127.0.0.1:4321`, sehingga dapat diarahkan dari Cloudflare Tunnel:
+
+```yaml
+ingress:
+  - hostname: app.example.com
+    service: http://127.0.0.1:4321
+  - service: http_status:404
+```
+
+Jika hasil build berubah, jalankan `npm run build && pm2 restart license-manager-frontend`.
+
 Setelah domain frontend tersedia, tambahkan domain tersebut ke `CORS_ORIGIN` backend. Contoh:
 
 ```env
