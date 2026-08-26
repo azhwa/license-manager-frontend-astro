@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Turnstile from '../components/Turnstile.astro';
+const supportUrl = import.meta.env.PUBLIC_SUPPORT_URL;
 ---
 <BaseLayout title="Check your license — License Manager" description="Securely check your license status." publicPage>
   <section class="public-main container">
@@ -28,6 +29,7 @@ import Turnstile from '../components/Turnstile.astro';
           <div class="key-box"><code id="result-key"></code><button class="copy-button" type="button" data-copy-target="result-key" aria-label="Copy license key"><iconify-icon icon="lucide:copy" width="16" ></iconify-icon></button></div>
           <div class="detail-grid"><div><span>Plan</span><strong id="result-plan">—</strong></div><div><span>Expires</span><strong id="result-expiry">—</strong></div><div><span>Remaining</span><strong id="result-days">—</strong></div><div><span>Reference</span><strong class="mono" id="result-ref">—</strong></div></div>
         </div>
+        {supportUrl && <a class="support-link" href={supportUrl} target="_blank" rel="noreferrer"><iconify-icon icon="lucide:message-circle" width="16"></iconify-icon>Need help? Chat via WhatsApp <iconify-icon icon="lucide:arrow-up-right" width="14"></iconify-icon></a>}
       </div>
     </div>
   </section>

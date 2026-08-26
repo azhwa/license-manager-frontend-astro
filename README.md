@@ -17,41 +17,36 @@ Atur `.env`:
 ```env
 PUBLIC_API_URL=http://localhost:3000
 PUBLIC_TURNSTILE_SITE_KEY=
-PUBLIC_SUPPORT_URL=https://lynk.id
+PUBLIC_SUPPORT_URL=https://wa.me/6281234567890?text=Halo%20saya%20butuh%20bantuan%20license
 ```
+
+`PUBLIC_SUPPORT_URL` dapat diisi dengan link WhatsApp dalam format internasional tanpa tanda `+`, spasi, atau tanda kurung. Ganti nomor contoh dengan nomor support Anda.
 
 `PUBLIC_*` adalah konfigurasi yang memang akan masuk ke bundle browser. Jangan menaruh Turso token, JWT secret, atau merchant key di sini.
 
-## Production
+## Production dengan Cloudflare Pages
 
-```bash
-npm ci
-npm run build
+Frontend ini adalah static Astro site, jadi tidak perlu PM2 atau proses Node.js yang berjalan di VPS. Cloudflare Pages mengambil source dari repository GitHub dan menjalankan build otomatis.
+
+Konfigurasi project Cloudflare Pages:
+
+| Pengaturan | Nilai |
+|---|---|
+| Production branch | `main` |
+| Build command | `npm run build` |
+| Build output directory | `dist` |
+| Root directory | `/` |
+| Node.js version | `20` |
+
+Environment variables pada Cloudflare Pages:
+
+```env
+PUBLIC_API_URL=https://api.example.com
+PUBLIC_TURNSTILE_SITE_KEY=isi_site_key_turnstile
+PUBLIC_SUPPORT_URL=https://wa.me/6281234567890?text=Halo%20saya%20butuh%20bantuan%20license
 ```
 
-Hasil build ada di `dist/` dan dapat dilayani oleh Nginx, Cloudflare Pages, atau static hosting lain. Backend tetap berjalan melalui PM2 dan Cloudflare Tunnel.
-
-## PM2 di VPS
-
-Setelah build selesai, jalankan static server frontend melalui PM2:
-
-```bash
-npm ci
-npm run build
-pm2 start ecosystem.config.cjs
-pm2 save
-```
-
-Frontend listen di `127.0.0.1:4321`, sehingga dapat diarahkan dari Cloudflare Tunnel:
-
-```yaml
-ingress:
-  - hostname: app.example.com
-    service: http://127.0.0.1:4321
-  - service: http_status:404
-```
-
-Jika hasil build berubah, jalankan `npm run build && pm2 restart license-manager-frontend`.
+`PUBLIC_*` adalah konfigurasi publik yang masuk ke bundle browser. Jangan menaruh Turso token, JWT secret, atau merchant key di sini.
 
 Setelah domain frontend tersedia, tambahkan domain tersebut ke `CORS_ORIGIN` backend. Contoh:
 

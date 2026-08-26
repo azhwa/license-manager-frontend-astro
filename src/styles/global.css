@@ -92,6 +92,8 @@ input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px 
 .button-small { min-height: 38px; padding-inline: 13px; font-size: 13px; }
 .button-wide { width: 100%; }
 .helper { margin: 10px 0 0; color: var(--muted-2); font-size: 12px; }
+.support-link { display: flex; align-items: center; justify-content: center; gap: 7px; margin-top: 17px; color: var(--muted); font-size: 12px; font-weight: 700; }
+.support-link:hover { color: var(--primary); }
 .message { display: none; align-items: flex-start; gap: 9px; margin-top: 16px; padding: 11px 12px; border-radius: 10px; font-size: 13px; }
 .message.is-visible { display: flex; }
 .message.error { color: #fecaca; background: rgba(239,68,68,.1); border: 1px solid rgba(239,68,68,.3); }
