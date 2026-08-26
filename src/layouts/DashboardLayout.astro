@@ -29,7 +29,8 @@ import '../styles/global.css';
       import '../lib/icons';
       document.querySelectorAll('[data-theme-toggle]').forEach((button) => button.addEventListener('click', () => { const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'; document.documentElement.dataset.theme = next; localStorage.setItem('lm-theme', next); }));
       document.querySelector('#menu-button')?.addEventListener('click', () => document.querySelector('#sidebar').classList.toggle('open'));
-      document.querySelectorAll('.side-link').forEach((link) => { if (link.dataset.path === location.pathname) link.classList.add('active'); });
+      const currentPath = location.pathname.replace(/\/+$/, '') || '/';
+      document.querySelectorAll('.side-link').forEach((link) => { if (link.dataset.path === currentPath) link.classList.add('active'); });
     </script>
     <script>import('../lib/dashboard');</script>
   </body>
