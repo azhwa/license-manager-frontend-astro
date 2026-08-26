@@ -1,0 +1,29 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Turnstile from '../components/Turnstile.astro';
+---
+<BaseLayout title="Admin login — License Manager" description="Sign in to manage licenses." publicPage>
+  <section class="auth-main container">
+    <div class="auth-card">
+      <div class="auth-icon"><iconify-icon icon="lucide:shield-check" width="24" ></iconify-icon></div>
+      <h1>Welcome back.</h1>
+      <p class="lead">Masuk ke control center untuk mengelola license access.</p>
+      <form id="login-form">
+        <div class="field"><label for="username">Username</label><div class="input-wrap"><iconify-icon icon="lucide:user-round" width="18" ></iconify-icon><input id="username" name="username" autocomplete="username" required /></div></div>
+        <div class="field"><label for="password">Password</label><div class="input-wrap"><iconify-icon icon="lucide:lock-keyhole" width="18" ></iconify-icon><input id="password" name="password" type="password" autocomplete="current-password" required /></div></div>
+        <Turnstile id="login-turnstile" />
+        <button class="button button-wide" type="submit"><span>Sign in</span><iconify-icon icon="lucide:arrow-right" width="17" ></iconify-icon></button>
+        <div class="message" id="login-message" role="alert"><iconify-icon icon="lucide:circle-alert" width="17" ></iconify-icon><span></span></div>
+      </form>
+    </div>
+  </section>
+  <script>
+    // @ts-nocheck
+    import { api, apiError, json } from '../lib/api';
+    import { setSession } from '../lib/auth';
+    const form = document.querySelector('#login-form'); const message = document.querySelector('#login-message'); const widget = document.querySelector('#login-turnstile'); let token = '';
+    const showError = (text) => { message.className = 'message error is-visible'; message.querySelector('span').textContent = text; };
+    if (widget && window.turnstile) window.turnstile.render(widget, { sitekey: widget.dataset.siteKey, callback: (value) => { token = value; } });
+    form?.addEventListener('submit', async (event) => { event.preventDefault(); const button = form.querySelector('button'); button.disabled = true; message.className = 'message'; try { const values = Object.fromEntries(new FormData(form)); const data = await api('/admin/login', json('POST', { ...values, ...(token ? { turnstile_token: token } : {}) })); setSession(data.token, data.user.username); window.location.href = '/dashboard'; } catch (error) { showError(apiError(error)); button.disabled = false; if (window.turnstile && widget) window.turnstile.reset(widget); token = ''; } });
+  </script>
+</BaseLayout>

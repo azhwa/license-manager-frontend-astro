@@ -1,0 +1,65 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Turnstile from '../components/Turnstile.astro';
+---
+<BaseLayout title="Check your license — License Manager" description="Securely check your license status." publicPage>
+  <section class="public-main container">
+    <div class="hero-grid">
+      <div class="hero-copy">
+        <span class="eyebrow">Secure license access</span>
+        <h1>Your access.<br /><span class="accent-text">Always clear.</span></h1>
+        <p class="lead">Masukkan reference ID transaksi Anda untuk melihat status lisensi secara cepat dan aman.</p>
+      </div>
+      <div class="lookup-card">
+        <div class="card-kicker"><span><span class="status-dot"></span>System operational</span><span>01 / 01</span></div>
+        <h2>Check license</h2>
+        <p class="helper" style="margin: 0 0 20px">Gunakan reference ID dari email atau halaman pembayaran Lynk.id.</p>
+        <form id="check-form">
+          <div class="field">
+            <label for="ref-id">Transaction reference ID</label>
+            <div class="input-wrap"><iconify-icon icon="lucide:scan-line" width="18" ></iconify-icon><input id="ref-id" name="ref_id" placeholder="contoh: c9994685f2f96b19..." autocomplete="off" required minlength="8" maxlength="128" /></div>
+          </div>
+          <Turnstile id="check-turnstile" />
+          <button class="button button-wide" type="submit"><span>Check license</span><iconify-icon icon="lucide:arrow-right" width="17" ></iconify-icon></button>
+          <div class="message" id="check-message" role="alert"><iconify-icon icon="lucide:circle-alert" width="17" ></iconify-icon><span></span></div>
+        </form>
+        <div class="result-card" id="license-result">
+          <div class="result-header"><span class="result-title"><iconify-icon icon="lucide:badge-check" width="18" ></iconify-icon> License found</span><span class="badge active" id="result-status">active</span></div>
+          <div class="key-box"><code id="result-key"></code><button class="copy-button" type="button" data-copy-target="result-key" aria-label="Copy license key"><iconify-icon icon="lucide:copy" width="16" ></iconify-icon></button></div>
+          <div class="detail-grid"><div><span>Plan</span><strong id="result-plan">—</strong></div><div><span>Expires</span><strong id="result-expiry">—</strong></div><div><span>Remaining</span><strong id="result-days">—</strong></div><div><span>Reference</span><strong class="mono" id="result-ref">—</strong></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <script>
+    // @ts-nocheck
+    import { api, apiError, json } from '../lib/api';
+    const form = document.querySelector('#check-form');
+    const message = document.querySelector('#check-message');
+    const result = document.querySelector('#license-result');
+    const turnstile = document.querySelector('#check-turnstile');
+    let turnstileToken = '';
+    const showMessage = (text, kind = 'error') => { message.className = `message ${kind} is-visible`; message.querySelector('span').textContent = text; };
+    const formatDate = (value) => value ? new Intl.DateTimeFormat('id-ID', { dateStyle: 'medium' }).format(new Date(value.replace(' ', 'T'))) : '—';
+    if (turnstile && window.turnstile) window.turnstile.render(turnstile, { sitekey: turnstile.dataset.siteKey, callback: (token) => { turnstileToken = token; } });
+    form?.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const button = form.querySelector('button[type="submit"]'); button.disabled = true; message.className = 'message'; result.classList.remove('is-visible');
+      try {
+        const body = { ref_id: new FormData(form).get('ref_id'), ...(turnstileToken ? { turnstile_token: turnstileToken } : {}) };
+        const data = await api('/license/check', json('POST', body));
+        const license = data.licenses?.[0];
+        if (!license) throw new Error('Lisensi tidak ditemukan untuk reference ID tersebut.');
+        document.querySelector('#result-key').textContent = license.license_key;
+        document.querySelector('#result-plan').textContent = license.plan_type;
+        document.querySelector('#result-expiry').textContent = formatDate(license.current_period_end);
+        document.querySelector('#result-days').textContent = `${license.days_remaining} hari`;
+        document.querySelector('#result-ref').textContent = license.refId;
+        const status = document.querySelector('#result-status'); status.textContent = license.status; status.className = `badge ${license.status}`;
+        result.classList.add('is-visible'); showMessage('License berhasil ditemukan.', 'success');
+      } catch (error) { showMessage(apiError(error)); }
+      finally { button.disabled = false; if (window.turnstile && turnstile) window.turnstile.reset(turnstile); turnstileToken = ''; }
+    });
+    document.querySelector('[data-copy-target]')?.addEventListener('click', async (event) => { const target = document.querySelector(`#${event.currentTarget.dataset.copyTarget}`); await navigator.clipboard.writeText(target.textContent); event.currentTarget.innerHTML = '<iconify-icon icon="lucide:check" width="16"></iconify-icon>'; setTimeout(() => event.currentTarget.innerHTML = '<iconify-icon icon="lucide:copy" width="16"></iconify-icon>', 1500); });
+  </script>
+</BaseLayout>

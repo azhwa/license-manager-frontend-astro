@@ -1,0 +1,10 @@
+---
+const { id = 'turnstile-widget' } = Astro.props;
+const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
+---
+{siteKey ? (
+  <div class="turnstile-slot" id={id} data-site-key={siteKey}></div>
+  <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"></script>
+) : (
+  <p class="helper">Turnstile belum dikonfigurasi di frontend. Backend tetap akan memvalidasi sesuai pengaturannya.</p>
+)}

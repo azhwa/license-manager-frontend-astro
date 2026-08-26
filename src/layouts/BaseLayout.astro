@@ -1,0 +1,59 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+  publicPage?: boolean;
+}
+
+const { title = 'License Manager', description = 'Manage license access with confidence.', publicPage = false } = Astro.props;
+---
+<!doctype html>
+<html lang="id" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <title>{title}</title>
+    <script is:inline>
+      (() => {
+        const saved = localStorage.getItem('lm-theme');
+        const theme = saved || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
+  </head>
+  <body class:list={{ 'public-body': publicPage }}>
+    {publicPage && (
+      <header class="public-nav container">
+        <a class="brand" href="/check" aria-label="License Manager home">
+          <span class="brand-mark"><iconify-icon icon="lucide:key-round" width="20" ></iconify-icon></span>
+          <span>license<span class="brand-accent">.manager</span></span>
+        </a>
+        <div class="nav-actions">
+          <button class="icon-button theme-toggle" type="button" data-theme-toggle aria-label="Toggle theme">
+            <iconify-icon icon="lucide:sun" width="18" class="theme-light-icon" ></iconify-icon>
+            <iconify-icon icon="lucide:moon" width="18" class="theme-dark-icon" ></iconify-icon>
+          </button>
+          <a class="button button-ghost button-small" href="/login">Admin login <iconify-icon icon="lucide:arrow-up-right" width="16" ></iconify-icon></a>
+        </div>
+      </header>
+    )}
+    <main><slot /></main>
+    <footer class:list={{ 'public-footer container': publicPage, 'sr-only': !publicPage }}>
+      <span>© {new Date().getFullYear()} License Manager</span>
+      <span>Secure access layer</span>
+    </footer>
+    <script>
+      import '../lib/icons';
+      document.querySelectorAll('[data-theme-toggle]').forEach((button) => {
+        button.addEventListener('click', () => {
+          const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+          document.documentElement.dataset.theme = next;
+          localStorage.setItem('lm-theme', next);
+        });
+      });
+    </script>
+  </body>
+</html>
