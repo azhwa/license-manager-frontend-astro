@@ -27,7 +27,7 @@ const supportUrl = import.meta.env.PUBLIC_SUPPORT_URL;
         <div class="result-card" id="license-result">
           <div class="result-header"><span class="result-title"><iconify-icon icon="lucide:badge-check" width="18" ></iconify-icon> License found</span><span class="badge active" id="result-status">active</span></div>
           <div class="key-box"><code id="result-key"></code><button class="copy-button" type="button" data-copy-target="result-key" aria-label="Copy license key"><iconify-icon icon="lucide:copy" width="16" ></iconify-icon></button></div>
-          <div class="detail-grid"><div><span>Plan</span><strong id="result-plan">—</strong></div><div><span>Expires</span><strong id="result-expiry">—</strong></div><div><span>Remaining</span><strong id="result-days">—</strong></div><div><span>Reference</span><strong class="mono" id="result-ref">—</strong></div></div>
+          <div class="detail-grid"><div><span>Name</span><strong id="result-name">—</strong></div><div><span>Plan</span><strong id="result-plan">—</strong></div><div><span>Expires</span><strong id="result-expiry">—</strong></div><div><span>Remaining</span><strong id="result-days">—</strong></div><div><span>Reference</span><strong class="mono" id="result-ref">—</strong></div></div>
         </div>
         {supportUrl && <a class="support-link" href={supportUrl} target="_blank" rel="noreferrer"><iconify-icon icon="lucide:message-circle" width="16"></iconify-icon>Need help? Chat via WhatsApp <iconify-icon icon="lucide:arrow-up-right" width="14"></iconify-icon></a>}
       </div>
@@ -42,7 +42,15 @@ const supportUrl = import.meta.env.PUBLIC_SUPPORT_URL;
     const turnstile = document.querySelector('#check-turnstile');
     let turnstileToken = '';
     const showMessage = (text, kind = 'error') => { message.className = `message ${kind} is-visible`; message.querySelector('span').textContent = text; };
-    const formatDate = (value) => value ? new Intl.DateTimeFormat('id-ID', { dateStyle: 'medium' }).format(new Date(value.replace(' ', 'T'))) : '—';
+    const parseApiDate = (value) => {
+      if (!value) return null;
+      const raw = String(value).trim();
+      const sqliteUtc = /^(\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2}:\d{2}(?:\.\d+)?)$/.exec(raw);
+      const parsed = new Date(sqliteUtc ? `${sqliteUtc[1]}T${sqliteUtc[2]}Z` : raw);
+      return Number.isFinite(parsed.getTime()) ? parsed : null;
+    };
+    const displayTimeZone = import.meta.env.PUBLIC_TIMEZONE || 'Asia/Jakarta';
+    const formatDate = (value) => { const parsed = parseApiDate(value); return parsed ? new Intl.DateTimeFormat('id-ID', { dateStyle: 'medium', timeZone: displayTimeZone }).format(parsed) : '—'; };
     if (turnstile && window.turnstile) window.turnstile.render(turnstile, { sitekey: turnstile.dataset.siteKey, callback: (token) => { turnstileToken = token; } });
     form?.addEventListener('submit', async (event) => {
       event.preventDefault();
@@ -52,6 +60,7 @@ const supportUrl = import.meta.env.PUBLIC_SUPPORT_URL;
         const data = await api('/license/check', json('POST', body));
         const license = data.licenses?.[0];
         if (!license) throw new Error('Lisensi tidak ditemukan untuk reference ID tersebut.');
+        document.querySelector('#result-name').textContent = license.name || '—';
         document.querySelector('#result-key').textContent = license.license_key;
         document.querySelector('#result-plan').textContent = license.plan_type;
         document.querySelector('#result-expiry').textContent = formatDate(license.current_period_end);
